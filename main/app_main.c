@@ -288,10 +288,9 @@ void bme680_init(void)
     ESP_ERROR_CHECK(bme680_init_sensor(&sensor));
 }
 
-void check_bme680()
+void check_bme680(esp_mqtt_client_handle_t client)
 {
-    // Changes the oversampling rates to 4x oversampling for temperature
-    // and 2x oversampling for humidity. Pressure measurement is skipped.
+    // Define oversampling rates
     bme680_set_oversampling_rates(&sensor, BME680_OSR_4X, BME680_OSR_2X, BME680_OSR_2X);
 
     // Change the IIR filter size for temperature and pressure to 7.
@@ -301,17 +300,16 @@ void check_bme680()
     bme680_set_heater_profile(&sensor, 0, 200, 100);
     bme680_use_heater_profile(&sensor, 0);
 
-    // Set ambient temperature to 10 degree Celsius
-    bme680_set_ambient_temperature(&sensor, 10);
-
     // as long as sensor configuration isn't changed, duration is constant
     uint32_t duration;
     bme680_get_measurement_duration(&sensor, &duration);
 
     TickType_t last_wakeup = xTaskGetTickCount();
 
+    float temperature = 10;
     bme680_values_float_t values;
-    for(int i = 0; i < 10; i++) {
+    while (true) {
+        bme680_set_ambient_temperature(&sensor, temperature);
         // trigger the sensor to start one TPHG measurement cycle
         if (bme680_force_measurement(&sensor) == ESP_OK)
         {
@@ -319,9 +317,17 @@ void check_bme680()
             vTaskDelay(duration);
 
             // get the results and do something with them
-            if (bme680_get_results_float(&sensor, &values) == ESP_OK)
+            if (bme680_get_results_float(&sensor, &values) == ESP_OK) {
                 printf("BME680 Sensor: %.2f °C, %.2f %%, %.2f hPa, %.2f Ohm\n",
                        values.temperature, values.humidity, values.pressure, values.gas_resistance);
+                esp_mqtt_client_publish(client, "sensor/climate/temperature", (char *) &values.temperature, sizeof(values.temperature), 1, 0);
+                esp_mqtt_client_publish(client, "sensor/climate/humidity", (char *) &values.humidity, sizeof(values.humidity), 1, 0);
+                esp_mqtt_client_publish(client, "sensor/climate/pressure", (char *) &values.pressure, sizeof(values.pressure), 1, 0);
+                esp_mqtt_client_publish(client, "sensor/climate/gas_resistance", (char *) &values.gas_resistance, sizeof(values.gas_resistance), 1, 0);
+                
+                // use temperature value to change ambient temperature for next measurement
+                temperature = values.temperature;
+            }
         }
         // passive waiting until 1 second is over
         vTaskDelayUntil(&last_wakeup, pdMS_TO_TICKS(1000));
@@ -355,8 +361,6 @@ void app_main(void)
     ESP_ERROR_CHECK(example_connect());
 
     bme680_init();
-
-    check_bme680();
 
     mqtt5_app_start();
 }
