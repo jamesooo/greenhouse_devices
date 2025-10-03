@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+if ! which idf.py > /dev/null; then
+    echo "idf.py not found in PATH. Please source the ESP-IDF environment."
+    . ~/esp/v5.5.1/esp-idf/export.sh || { echo "Failed to source ESP-IDF environment"; exit 1; }
+fi
+
+idf.py build
+idf.py flash
+idf.py monitor
