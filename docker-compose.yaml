@@ -32,13 +32,22 @@ services:
       - MQTT_USERNAME=${MQTT_USERNAME:-your_mqtt_username}
       - MQTT_PASSWORD=${MQTT_PASSWORD:-your_mqtt_password}
       - MQTT_PORT=1883
+      # Alert thresholds - adjust based on crop requirements
+      - ALERT_TEMP_HIGH=${ALERT_TEMP_HIGH:-28}
+      - ALERT_TEMP_LOW=${ALERT_TEMP_LOW:-18}
+      - ALERT_HUMIDITY_HIGH=${ALERT_HUMIDITY_HIGH:-70}
+      - ALERT_HUMIDITY_LOW=${ALERT_HUMIDITY_LOW:-40}
+      - ALERT_LIGHTS_ON_HOUR=${ALERT_LIGHTS_ON_HOUR:-06}
+      - ALERT_LIGHTS_OFF_HOUR=${ALERT_LIGHTS_OFF_HOUR:-22}
     ports:
       - "3000:3000"
     volumes:
       - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana-provisioning/alerting:/etc/grafana/provisioning/alerting
     depends_on:
       - timescale
+      - mosquitto
   telegraf:
     image: telegraf:latest
     container_name: telegraf

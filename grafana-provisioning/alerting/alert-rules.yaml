@@ -1,0 +1,422 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Greenhouse Climate Alerts
+    folder: Greenhouse
+    interval: 1m
+    rules:
+      - uid: temperature_too_high
+        title: Temperature Too High
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: timescaledb
+            model:
+              editorMode: code
+              format: time_series
+              rawSql: |
+                SELECT 
+                  time as "time",
+                  temperature
+                FROM greenhouse.mqtt_consumer
+                WHERE $__timeFilter(time)
+                ORDER BY time
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: []
+                  reducer:
+                    params: []
+                    type: avg
+                  type: query
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - ${ALERT_TEMP_HIGH}
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: "Temperature is {{ $values.B.Value }}°C (threshold: ${ALERT_TEMP_HIGH}°C)"
+          summary: "Greenhouse temperature too high"
+        labels:
+          severity: warning
+          alert_type: climate
+        isPaused: false
+
+      - uid: temperature_too_low
+        title: Temperature Too Low
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: timescaledb
+            model:
+              editorMode: code
+              format: time_series
+              rawSql: |
+                SELECT 
+                  time as "time",
+                  temperature
+                FROM greenhouse.mqtt_consumer
+                WHERE $__timeFilter(time)
+                ORDER BY time
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              refId: C
+              type: threshold
+              conditions:
+                - evaluator:
+                    params:
+                      - ${ALERT_TEMP_LOW}
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: "Temperature is {{ $values.B.Value }}°C (threshold: ${ALERT_TEMP_LOW}°C)"
+          summary: "Greenhouse temperature too low"
+        labels:
+          severity: warning
+          alert_type: climate
+        isPaused: false
+
+      - uid: humidity_too_high
+        title: Humidity Too High
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: timescaledb
+            model:
+              editorMode: code
+              format: time_series
+              rawSql: |
+                SELECT 
+                  time as "time",
+                  humidity
+                FROM greenhouse.mqtt_consumer
+                WHERE $__timeFilter(time)
+                ORDER BY time
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              refId: C
+              type: threshold
+              conditions:
+                - evaluator:
+                    params:
+                      - ${ALERT_HUMIDITY_HIGH}
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: "Humidity is {{ $values.B.Value }}% (threshold: ${ALERT_HUMIDITY_HIGH}%)"
+          summary: "Greenhouse humidity too high"
+        labels:
+          severity: warning
+          alert_type: climate
+        isPaused: false
+
+      - uid: humidity_too_low
+        title: Humidity Too Low
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: timescaledb
+            model:
+              editorMode: code
+              format: time_series
+              rawSql: |
+                SELECT 
+                  time as "time",
+                  humidity
+                FROM greenhouse.mqtt_consumer
+                WHERE $__timeFilter(time)
+                ORDER BY time
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              refId: C
+              type: threshold
+              conditions:
+                - evaluator:
+                    params:
+                      - ${ALERT_HUMIDITY_LOW}
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: "Humidity is {{ $values.B.Value }}% (threshold: ${ALERT_HUMIDITY_LOW}%)"
+          summary: "Greenhouse humidity too low"
+        labels:
+          severity: warning
+          alert_type: climate
+        isPaused: false
+
+  - orgId: 1
+    name: Greenhouse Light Schedule
+    folder: Greenhouse
+    interval: 1m
+    rules:
+      - uid: lights_on_schedule
+        title: Lights Should Be On
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: "1"
+              refId: A
+              type: math
+          - refId: B
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              refId: C
+              type: threshold
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          description: "Lights should be ON (${ALERT_LIGHTS_ON_HOUR}:00-${ALERT_LIGHTS_OFF_HOUR}:00)"
+          summary: "Light schedule: ON"
+        labels:
+          severity: info
+          alert_type: schedule
+          action: lights_on
+        isPaused: false
+
+      - uid: lights_off_schedule
+        title: Lights Should Be Off
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: "1"
+              refId: A
+              type: math
+          - refId: B
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: B
+              refId: C
+              type: threshold
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          description: "Lights should be OFF (${ALERT_LIGHTS_OFF_HOUR}:00-${ALERT_LIGHTS_ON_HOUR}:00)"
+          summary: "Light schedule: OFF"
+        labels:
+          severity: info
+          alert_type: schedule
+          action: lights_off
+        isPaused: false

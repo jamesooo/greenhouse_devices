@@ -1,0 +1,74 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: MQTT - Temperature High
+    receivers:
+      - uid: mqtt_temp_high
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/alerts/temperature/high
+          messageFormat: json
+          clientId: grafana-alert-temp-high
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: MQTT - Temperature Low
+    receivers:
+      - uid: mqtt_temp_low
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/alerts/temperature/low
+          messageFormat: json
+          clientId: grafana-alert-temp-low
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: MQTT - Humidity High
+    receivers:
+      - uid: mqtt_humidity_high
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/alerts/humidity/high
+          messageFormat: json
+          clientId: grafana-alert-humidity-high
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: MQTT - Humidity Low
+    receivers:
+      - uid: mqtt_humidity_low
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/alerts/humidity/low
+          messageFormat: json
+          clientId: grafana-alert-humidity-low
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: MQTT - Lights On
+    receivers:
+      - uid: mqtt_lights_on
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/control/lights/on
+          messageFormat: json
+          clientId: grafana-alert-lights-on
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: MQTT - Lights Off
+    receivers:
+      - uid: mqtt_lights_off
+        type: mqtt
+        settings:
+          brokerUrl: tcp://mosquitto:1883
+          topic: greenhouse/control/lights/off
+          messageFormat: json
+          clientId: grafana-alert-lights-off
+        disableResolveMessage: false
