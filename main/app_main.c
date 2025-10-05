@@ -26,6 +26,8 @@
 
 static const char *TAG = "bme680_mqtt5";
 
+#include "env_config.h"
+
 // Global state
 static volatile bool sensor_running = false;
 static TaskHandle_t sensor_task_handle = NULL;
@@ -214,7 +216,7 @@ static void mqtt5_app_start(void)
     };
 
     esp_mqtt_client_config_t mqtt5_cfg = {
-        .broker.address.uri = CONFIG_BROKER_URL,
+        .broker.address.uri = ENV_MQTT_BROKER_URL,
         .session.protocol_ver = MQTT_PROTOCOL_V_5,
         .network.disable_auto_reconnect = true,
         //.credentials.username = "123",
@@ -338,13 +340,18 @@ void check_bme680(esp_mqtt_client_handle_t client)
             if (bme680_get_results_float(&sensor, &values) == ESP_OK) {
                 printf("BME680 Sensor: %.2f °C, %.2f %%, %.2f hPa, %.2f Ohm\n",
                        values.temperature, values.humidity, values.pressure, values.gas_resistance);
-                esp_mqtt_client_publish(client, "sensor/climate/temperature", (char *) &values.temperature, sizeof(values.temperature), 1, 0);
-                esp_mqtt_client_publish(client, "sensor/climate/humidity", (char *) &values.humidity, sizeof(values.humidity), 1, 0);
-                esp_mqtt_client_publish(client, "sensor/climate/pressure", (char *) &values.pressure, sizeof(values.pressure), 1, 0);
-                esp_mqtt_client_publish(client, "sensor/climate/gas_resistance", (char *) &values.gas_resistance, sizeof(values.gas_resistance), 1, 0);
                 
-                // Publish heartbeat
-                esp_mqtt_client_publish(client, "sensor/heartbeat", "alive", 5, 1, 0);
+                // Create JSON payload with all sensor readings
+                char json_payload[256];
+                snprintf(json_payload, sizeof(json_payload),
+                        "{\"temperature\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"gas_resistance\":%.2f}",
+                        values.temperature, values.humidity, values.pressure, values.gas_resistance);
+                
+                // Publish as single JSON message
+                esp_mqtt_client_publish(client, "sensor/climate", json_payload, 0, 1, 0);
+                
+                // Publish heartbeat as JSON
+                esp_mqtt_client_publish(client, "sensor/heartbeat", "{\"status\":\"alive\"}", 0, 1, 0);
                 
                 // use temperature value to change ambient temperature for next measurement
                 temperature = values.temperature;

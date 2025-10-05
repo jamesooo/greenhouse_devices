@@ -13,3 +13,5 @@ build/
 .vscode/
 /sdkconfig
 /sdkconfig.old
+/.env
+/main/env_config.h
