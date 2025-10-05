@@ -1,4 +1,34 @@
-menu "Example Configuration"
+menu "Greenhouse Device Configuration"
+
+    choice DEVICE_TYPE
+        prompt "Device Type"
+        default DEVICE_CLIMATE_MONITOR
+        help
+            Select which device firmware to build.
+            Each device type has different functionality and sensors.
+
+        config DEVICE_CLIMATE_MONITOR
+            bool "Climate Monitor (BME680)"
+            help
+                Climate monitoring device with BME680 sensor.
+                Measures temperature, humidity, pressure, and air quality.
+                Publishes data to MQTT topic: sensor/climate
+
+        config DEVICE_HUMIDIFIER
+            bool "Humidifier Controller"
+            help
+                Controls humidifier based on MQTT commands.
+                Monitors humidity and adjusts humidifier output.
+                (Not yet implemented)
+
+        config DEVICE_LIGHT_CONTROLLER
+            bool "Light Controller"
+            help
+                Controls grow lights based on MQTT commands.
+                Supports scheduling and dimming.
+                (Not yet implemented)
+
+    endchoice
 
     config BROKER_URL
         string "Broker URL"
