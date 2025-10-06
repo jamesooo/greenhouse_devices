@@ -1,4 +1,4 @@
-idf_component_register(SRCS "app_main.c"
+idf_component_register(SRCS "app_main.c" "mqtt_client_manager.c"
                     PRIV_REQUIRES mqtt nvs_flash esp_netif devices
                     INCLUDE_DIRS ".")
 
