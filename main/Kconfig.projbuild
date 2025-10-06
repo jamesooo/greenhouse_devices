@@ -40,4 +40,26 @@ menu "Greenhouse Device Configuration"
         bool
         default y if BROKER_URL = "FROM_STDIN"
 
+    config DEVICE_ID
+        string "Device ID"
+        default "climate-01"
+        help
+            Unique identifier for this device.
+            Used to distinguish between multiple devices in the greenhouse.
+            Examples: climate-01, climate-02, climate-north, climate-south
+
+    config DEVICE_LOCATION_X
+        int "Device X Coordinate (cm)"
+        default 0
+        help
+            X coordinate of device location in greenhouse (cm from origin).
+            Used for spatial visualization in dashboards.
+
+    config DEVICE_LOCATION_Y
+        int "Device Y Coordinate (cm)"
+        default 0
+        help
+            Y coordinate of device location in greenhouse (cm from origin).
+            Used for spatial visualization in dashboards.
+
 endmenu

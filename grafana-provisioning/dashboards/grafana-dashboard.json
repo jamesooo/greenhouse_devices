@@ -105,7 +105,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time AS \"time\",\n  temperature\nFROM greenhouse.mqtt_consumer\nWHERE\n  $__timeFilter(time)\nORDER BY time",
+          "rawSql": "SELECT\n  time AS \"time\",\n  temperature_mean AS temperature\nFROM public.mqtt_consumer\nWHERE\n  $__timeFilter(time)\n  AND device_id IN ($device_id)\nORDER BY time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -213,7 +213,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time AS \"time\",\n  humidity\nFROM greenhouse.mqtt_consumer\nWHERE\n  $__timeFilter(time)\nORDER BY time",
+          "rawSql": "SELECT\n  time AS \"time\",\n  humidity_mean AS humidity\nFROM public.mqtt_consumer\nWHERE\n  $__timeFilter(time)\n  AND device_id IN ($device_id)\nORDER BY time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -321,7 +321,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time AS \"time\",\n  pressure\nFROM greenhouse.mqtt_consumer\nWHERE\n  $__timeFilter(time)\nORDER BY time",
+          "rawSql": "SELECT\n  time AS \"time\",\n  pressure_mean AS pressure\nFROM public.mqtt_consumer\nWHERE\n  $__timeFilter(time)\n  AND device_id IN ($device_id)\nORDER BY time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -429,7 +429,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  time AS \"time\",\n  gas_resistance\nFROM greenhouse.mqtt_consumer\nWHERE\n  $__timeFilter(time)\nORDER BY time",
+          "rawSql": "SELECT\n  time AS \"time\",\n  gas_resistance_mean AS gas_resistance\nFROM public.mqtt_consumer\nWHERE\n  $__timeFilter(time)\n  AND device_id IN ($device_id)\nORDER BY time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -508,7 +508,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT temperature FROM greenhouse.mqtt_consumer ORDER BY time DESC LIMIT 1",
+          "rawSql": "SELECT temperature_mean AS temperature FROM public.mqtt_consumer WHERE device_id IN ($device_id) ORDER BY time DESC LIMIT 1",
           "refId": "A",
           "sql": {
             "columns": [
@@ -603,7 +603,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT humidity FROM greenhouse.mqtt_consumer ORDER BY time DESC LIMIT 1",
+          "rawSql": "SELECT humidity_mean AS humidity FROM public.mqtt_consumer WHERE device_id IN ($device_id) ORDER BY time DESC LIMIT 1",
           "refId": "A",
           "sql": {
             "columns": [
@@ -682,7 +682,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT pressure FROM greenhouse.mqtt_consumer ORDER BY time DESC LIMIT 1",
+          "rawSql": "SELECT pressure_mean AS pressure FROM public.mqtt_consumer WHERE device_id IN ($device_id) ORDER BY time DESC LIMIT 1",
           "refId": "A",
           "sql": {
             "columns": [
@@ -769,7 +769,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT gas_resistance FROM greenhouse.mqtt_consumer ORDER BY time DESC LIMIT 1",
+          "rawSql": "SELECT gas_resistance_mean AS gas_resistance FROM public.mqtt_consumer WHERE device_id IN ($device_id) ORDER BY time DESC LIMIT 1",
           "refId": "A",
           "sql": {
             "columns": [
@@ -798,7 +798,32 @@
   "schemaVersion": 39,
   "tags": ["greenhouse", "climate", "iot"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "TimescaleDB"
+        },
+        "definition": "SELECT DISTINCT device_id FROM public.mqtt_consumer ORDER BY device_id",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Device",
+        "multi": false,
+        "name": "device_id",
+        "options": [],
+        "query": "SELECT DISTINCT device_id FROM public.mqtt_consumer ORDER BY device_id",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-15m",

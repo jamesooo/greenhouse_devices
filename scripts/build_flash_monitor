@@ -7,5 +7,6 @@ if ! which idf.py > /dev/null; then
 fi
 
 idf.py build
+docker-compose up -d
 idf.py flash
 idf.py monitor

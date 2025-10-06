@@ -2,72 +2,53 @@ apiVersion: 1
 
 policies:
   - orgId: 1
-    receiver: default-email
-    group_by: ['alertname', 'grafana_folder']
-    group_wait: 10s
-    group_interval: 10s
-    repeat_interval: 12h
+    receiver: MQTT - Temperature High
     routes:
       - receiver: MQTT - Temperature High
         matchers:
-          - alert_type = climate
-          - severity = warning
-        continue: false
+          - alertname = "Temperature Too High"
         group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
         repeat_interval: 5m
-        routes:
-          - receiver: MQTT - Temperature High
-            matchers:
-              - alertname = Temperature Too High
-            continue: false
 
-          - receiver: MQTT - Temperature Low
-            matchers:
-              - alertname = Temperature Too Low
-            continue: false
+      - receiver: MQTT - Temperature Low
+        matchers:
+          - alertname = "Temperature Too Low"
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 5m
 
-          - receiver: MQTT - Humidity High
-            matchers:
-              - alertname = Humidity Too High
-            continue: false
+      - receiver: MQTT - Humidity High
+        matchers:
+          - alertname = "Humidity Too High"
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 5m
 
-          - receiver: MQTT - Humidity Low
-            matchers:
-              - alertname = Humidity Too Low
-            continue: false
+      - receiver: MQTT - Humidity Low
+        matchers:
+          - alertname = "Humidity Too Low"
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 5m
 
       - receiver: MQTT - Lights On
         matchers:
-          - alert_type = schedule
-        continue: false
-        group_by: ['action']
+          - alertname = "Lights Should Be On"
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
         repeat_interval: 1h
-        routes:
-          - receiver: MQTT - Lights On
-            matchers:
-              - action = lights_on
-            continue: false
 
-          - receiver: MQTT - Lights Off
-            matchers:
-              - action = lights_off
-            continue: false
+      - receiver: MQTT - Lights Off
+        matchers:
+          - alertname = "Lights Should Be Off"
+        group_by: ['alertname']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 1h
 
-muteTimeIntervals:
-  - name: lights-on-hours
-    time_intervals:
-      - times:
-          - start_time: "${ALERT_LIGHTS_ON_HOUR}:00"
-            end_time: "${ALERT_LIGHTS_OFF_HOUR}:00"
-        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-
-  - name: lights-off-hours
-    time_intervals:
-      - times:
-          - start_time: "${ALERT_LIGHTS_OFF_HOUR}:00"
-            end_time: "23:59"
-        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-      - times:
-          - start_time: "00:00"
-            end_time: "${ALERT_LIGHTS_ON_HOUR}:00"
-        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']

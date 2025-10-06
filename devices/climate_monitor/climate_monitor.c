@@ -34,12 +34,14 @@ static volatile bool sensor_running = false;
 static TaskHandle_t sensor_task_handle = NULL;
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 static bool sensor_initialized = false;
+static volatile bool mqtt_connected = false;
 bme680_t sensor;  // BME680 sensor descriptor
 
 // Forward declarations
 void sensor_task(void *pvParameters);
 void bme680_init(void);
 void bme680_cleanup(void);
+void mqtt_reconnect_task(void *pvParameters);
 
 static void log_error_if_nonzero(const char *message, int error_code)
 {
@@ -97,6 +99,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         print_user_property(event->property->user_property);
+        mqtt_connected = true;
         
         // Subscribe to control topic for leave commands
         msg_id = esp_mqtt_client_subscribe(client, "sensor/control", 1);
@@ -117,6 +120,7 @@ static void mqtt5_event_handler(void *handler_args, esp_event_base_t base, int32
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
         print_user_property(event->property->user_property);
+        mqtt_connected = false;
         
         // Stop sensor reading task
         if (sensor_running) {
@@ -219,7 +223,8 @@ static void mqtt5_app_start(void)
     esp_mqtt_client_config_t mqtt5_cfg = {
         .broker.address.uri = ENV_DEVICE_MQTT_BROKER_URL,
         .session.protocol_ver = MQTT_PROTOCOL_V_5,
-        .network.disable_auto_reconnect = true,
+        .network.disable_auto_reconnect = false,
+        .network.reconnect_timeout_ms = 60000,  // Retry every 60 seconds
         //.credentials.username = "123",
         //.credentials.authentication.password = "456",
         .session.last_will.topic = "/topic/will",
@@ -425,17 +430,31 @@ void check_bme680(esp_mqtt_client_handle_t client)
         printf("BME680 Sensor: %.2f °C, %.2f %%, %.2f hPa, %.2f Ohm\n",
                values.temperature, values.humidity, values.pressure, values.gas_resistance);
         
-        // Create JSON payload with all sensor readings
-        char json_payload[256];
-        snprintf(json_payload, sizeof(json_payload),
-                "{\"temperature\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"gas_resistance\":%.2f}",
-                values.temperature, values.humidity, values.pressure, values.gas_resistance);
-        
-        // Publish as single JSON message
-        esp_mqtt_client_publish(client, "sensor/climate", json_payload, 0, 1, 0);
-        
-        // Publish heartbeat as JSON
-        esp_mqtt_client_publish(client, "sensor/heartbeat", "{\"status\":\"alive\"}", 0, 1, 0);
+        // Only publish if MQTT is connected, otherwise drop the reading
+        if (mqtt_connected && mqtt_client) {
+            // Create JSON payload with all sensor readings and device ID
+            char json_payload[512];
+            snprintf(json_payload, sizeof(json_payload),
+                    "{\"device_id\":\"%s\",\"temperature\":%.2f,\"humidity\":%.2f,\"pressure\":%.2f,\"gas_resistance\":%.2f,\"location_x\":%d,\"location_y\":%d}",
+                    CONFIG_DEVICE_ID,
+                    values.temperature, values.humidity, values.pressure, values.gas_resistance,
+                    CONFIG_DEVICE_LOCATION_X, CONFIG_DEVICE_LOCATION_Y);
+            
+            // Publish as single JSON message
+            int msg_id = esp_mqtt_client_publish(client, "sensor/climate", json_payload, 0, 1, 0);
+            if (msg_id < 0) {
+                ESP_LOGW(TAG, "Failed to publish climate data, will retry on next reading");
+            }
+            
+            // Publish heartbeat as JSON with device ID
+            char heartbeat_payload[128];
+            snprintf(heartbeat_payload, sizeof(heartbeat_payload),
+                    "{\"device_id\":\"%s\",\"status\":\"alive\"}",
+                    CONFIG_DEVICE_ID);
+            esp_mqtt_client_publish(client, "sensor/heartbeat", heartbeat_payload, 0, 1, 0);
+        } else {
+            ESP_LOGD(TAG, "MQTT not connected, dropping reading (temp: %.2f °C)", values.temperature);
+        }
         
         // use temperature value to change ambient temperature for next measurement
         temperature = values.temperature;
