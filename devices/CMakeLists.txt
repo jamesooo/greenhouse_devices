@@ -20,7 +20,7 @@ endif()
 idf_component_register(
     SRCS ${DEVICE_SRCS}
     INCLUDE_DIRS "."
-    REQUIRES esp_wifi mqtt esp_netif nvs_flash esp_event driver i2cdev bme680 protocol_examples_common
-    PRIV_REQUIRES main
+    REQUIRES esp_wifi mqtt esp_netif nvs_flash esp_event driver i2cdev bme680 esp_adc protocol_examples_common
+    PRIV_REQUIRES main json
 )
 

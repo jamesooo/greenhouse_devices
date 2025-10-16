@@ -18,6 +18,21 @@ extern "C" {
 void climate_monitor_init(esp_mqtt_client_handle_t client);
 
 /**
+ * @brief Subscribe to config topic for calibration updates
+ * 
+ * Should be called after MQTT connection is established.
+ * Subscribes to: sensor/config/{device_id}
+ */
+void climate_monitor_subscribe_config(void);
+
+/**
+ * @brief Get the MQTT data received callback
+ * 
+ * @return Function pointer to on_data_received callback
+ */
+void* climate_monitor_get_data_callback(void);
+
+/**
  * @brief Start the climate monitor sensor reading task
  * 
  * Starts a task that continuously reads the BME680 sensor

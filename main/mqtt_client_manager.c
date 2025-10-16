@@ -22,9 +22,9 @@ static mqtt_device_callbacks_t device_callbacks = {0};
 
 // MQTT5 user properties
 static esp_mqtt5_user_property_item_t user_property_arr[] = {
-    {"board", "esp32"},
-    {"u", "user"},
-    {"p", "password"}
+    {"board", ENV_MQTT_CLIENT_ID},
+    {"u", ENV_MQTT_USERNAME},
+    {"p", ENV_MQTT_PASSWORD}
 };
 
 #define USE_PROPERTY_ARR_SIZE   sizeof(user_property_arr)/sizeof(esp_mqtt5_user_property_item_t)

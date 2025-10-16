@@ -21,7 +21,7 @@ static void on_mqtt_connected(esp_mqtt_client_handle_t client)
     ESP_LOGI(TAG, "Device connected to MQTT broker");
     
     #if defined(CONFIG_DEVICE_CLIMATE_MONITOR)
-        // Start the climate monitor sensor task
+        climate_monitor_subscribe_config();
         climate_monitor_start();
     #endif
 }
@@ -49,7 +49,11 @@ void app_main(void)
     mqtt_device_callbacks_t callbacks = {
         .on_connected = on_mqtt_connected,
         .on_disconnected = on_mqtt_disconnected,
-        .on_data_received = NULL,  // Not used by climate monitor (publisher only)
+        #if defined(CONFIG_DEVICE_CLIMATE_MONITOR)
+            .on_data_received = (mqtt_data_received_cb_t)climate_monitor_get_data_callback(),
+        #else
+            .on_data_received = NULL,
+        #endif
     };
     
     // Initialize MQTT client manager

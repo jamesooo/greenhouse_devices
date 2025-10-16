@@ -2,3 +2,4 @@ dependencies:
   protocol_examples_common:
     path: ${IDF_PATH}/examples/common_components/protocol_examples_common
   esp-idf-lib/bme680: '*'
+  esp-idf-lib/bmp280: '*'  # BME280/BMP280 support for mislabeled sensors
